@@ -47,6 +47,13 @@ def generate_launch_description():
         executable='image_sequence_node',
         output='screen',
         parameters=[{
+            'timestamp_file': LaunchConfiguration('timestamp_file'),
+            'imu_file': LaunchConfiguration('imu_file'),
+            'imu_frame_id': LaunchConfiguration('imu_frame_id'),
+            'imu_warmup_s': ParameterValue(LaunchConfiguration('imu_warmup_s'), value_type=float),
+            'max_imu_gap_s': ParameterValue(LaunchConfiguration('max_imu_gap_s'), value_type=float),
+            'imu_gyro_scale': ParameterValue(LaunchConfiguration('imu_gyro_scale'), value_type=float),
+            'imu_accel_scale': ParameterValue(LaunchConfiguration('imu_accel_scale'), value_type=float),
             'image_dir': image_dir,
             'calibration_file': calibration_file,
             'glob': 'firefly_*.png',
@@ -65,6 +72,13 @@ def generate_launch_description():
         condition=IfCondition(use_rviz),
     )
     return LaunchDescription([
+        DeclareLaunchArgument('timestamp_file', default_value=''),
+        DeclareLaunchArgument('imu_file', default_value=''),
+        DeclareLaunchArgument('imu_frame_id', default_value='imu_link'),
+        DeclareLaunchArgument('imu_warmup_s', default_value='1.0'),
+        DeclareLaunchArgument('max_imu_gap_s', default_value='0.05'),
+        DeclareLaunchArgument('imu_gyro_scale', default_value='1.0'),
+        DeclareLaunchArgument('imu_accel_scale', default_value='1.0'),
         DeclareLaunchArgument('image_dir', default_value='/home/user/2026-06-22VTOL/firefly'),
         DeclareLaunchArgument('calibration_file', default_value='/home/user/mono-cuvslam-ros2/config/firefly_20260622_assumed.yaml'),
         DeclareLaunchArgument('start_index', default_value='1'),

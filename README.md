@@ -12,3 +12,5 @@ Jetson AGX Orin 專案，使用 cuVSLAM Core 的 Python API；ROS 2 Node 會自�
 架構：相機／離線圖片 → `/camera/image_raw`、`/camera/camera_info` → PyCuVSLAM Mono → `/mono_cuvslam/odometry`、`/mono_cuvslam/path`、追蹤狀態與 `/tf`。單目平移沒有絕對尺度；PX4 EKF2 串接需在未來另行解決尺度後進行。
 
 真值比較：可在追蹤完成後自動用 Sim(3) 對齊 `EO_opk_new.csv`，產生有圖例的 XY/Z 疊圖及相機影像同步比較影片。用法見 [Sim(3) 真值比較](docs/sim3_comparison.md)。
+
+IMU 與真實時間戳：已加入高頻 IMU 同步回放與資料檢查；目前 cuVSLAM 單目模式不支援 IMU 融合，詳見 [IMU 輸入與限制](docs/imu_inputs.md)。

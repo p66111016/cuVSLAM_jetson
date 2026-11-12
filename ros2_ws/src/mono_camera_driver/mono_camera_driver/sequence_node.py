@@ -10,10 +10,11 @@ import rclpy
 from rclpy.node import Node
 from rclpy.qos import QoSProfile, ReliabilityPolicy
 from rclpy.time import Time
-from sensor_msgs.msg import Image
+from sensor_msgs.msg import Image, Imu
 from std_msgs.msg import UInt64
 
 from .node import load_camera_info
+from .sequence_data import load_image_timestamps, load_imu, ImuReplay
 
 
 def natural_key(path: Path):
@@ -28,6 +29,9 @@ class ImageSequenceNode(Node):
             ('image_dir', ''), ('calibration_file', ''), ('glob', '*'),
             ('fps', 30.0), ('replay_fps', 0.0), ('frame_id', 'camera_optical_frame'),
             ('start_index', 0), ('max_frames', 0), ('prefetch', True),
+            ('timestamp_file', ''), ('imu_file', ''), ('imu_frame_id', 'imu_link'),
+            ('imu_warmup_s', 1.0), ('max_imu_gap_s', 0.05),
+            ('imu_gyro_scale', 1.0), ('imu_accel_scale', 1.0),
         ):
             self.declare_parameter(name, default)
         get = lambda name: self.get_parameter(name).value
@@ -52,6 +56,27 @@ class ImageSequenceNode(Node):
         self.files = files[start:start + limit if limit else None]
         if not self.files:
             raise ValueError(f'no images found in {image_dir}')
+        timestamp_file = str(get('timestamp_file'))
+        imu_file = str(get('imu_file'))
+        self.image_stamps = (load_image_timestamps(timestamp_file, self.files)
+                             if timestamp_file else None)
+        self.imu_replay = None
+        self.imu_pub = None
+        if imu_file:
+            if self.image_stamps is None:
+                raise ValueError('imu_file requires timestamp_file; synthetic FPS is unsafe for IMU')
+            self.imu_replay = ImuReplay(load_imu(imu_file), self.image_stamps,
+                                        float(get('imu_warmup_s')), float(get('max_imu_gap_s')))
+            self.imu_frame_id = str(get('imu_frame_id'))
+            self.gyro_scale = float(get('imu_gyro_scale'))
+            self.accel_scale = float(get('imu_accel_scale'))
+            import math
+            if not all(math.isfinite(v) and v > 0 for v in (self.gyro_scale, self.accel_scale)):
+                raise ValueError('IMU unit scales must be finite and positive')
+            self.imu_pub = self.create_publisher(
+                Imu, '/imu/data_raw', QoSProfile(depth=1000, reliability=ReliabilityPolicy.RELIABLE))
+            self.get_logger().warning('Publishing synchronized raw IMU only. cuVSLAM Mono does '
+                                      'NOT fuse IMU; a supported VIO backend is required.')
         self.index = 0
         self.base_stamp_ns = self.get_clock().now().nanoseconds
         self.frame_interval_ns = round(1_000_000_000 / fps)
@@ -67,7 +92,8 @@ class ImageSequenceNode(Node):
                         if bool(get('prefetch')) else None)
         self.prefetch_future = (self.decoder.submit(self.read_frame, self.files[0])
                                 if self.decoder is not None else None)
-        self.get_logger().info(f'Loaded {len(self.files)} images; source timestamps {fps:g} FPS; '
+        self.get_logger().info(f'Loaded {len(self.files)} images; timestamps '
+                               f'{timestamp_file or str(fps) + " FPS synthetic"}; '
                                f'replay {"uncapped" if self.fast_replay else str(replay_fps) + " FPS"}')
 
     def read_frame(self, path: Path):
@@ -105,7 +131,19 @@ class ImageSequenceNode(Node):
             self.prefetch_future = self.decoder.submit(self.read_frame,
                                                        self.files[self.index + 1])
         height, width = frame.shape
-        stamp_ns = self.base_stamp_ns + self.index * self.frame_interval_ns
+        stamp_ns = (self.image_stamps[self.index] if self.image_stamps is not None
+                    else self.base_stamp_ns + self.index * self.frame_interval_ns)
+        if self.imu_replay is not None:
+            for sample in self.imu_replay.through(stamp_ns):
+                msg = Imu()
+                msg.header.stamp = Time(nanoseconds=sample.stamp_ns).to_msg()
+                msg.header.frame_id = self.imu_frame_id
+                msg.orientation_covariance[0] = -1.0
+                # Unknown covariance (all zeros); preserve raw sensor axes and gravity.
+                for axis, gyro, accel in zip(('x', 'y', 'z'), sample.gyro, sample.accel):
+                    setattr(msg.angular_velocity, axis, gyro * self.gyro_scale)
+                    setattr(msg.linear_acceleration, axis, accel * self.accel_scale)
+                self.imu_pub.publish(msg)
         stamp = Time(nanoseconds=stamp_ns).to_msg()
         image = Image()
         image.header.stamp = stamp
