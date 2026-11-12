@@ -1,0 +1,77 @@
+Panels:
+  - Class: rviz_common/Displays
+    Name: Displays
+  - Class: rviz_common/Views
+    Name: Views
+Visualization Manager:
+  Class: ""
+  Displays:
+    - Class: rviz_default_plugins/Grid
+      Enabled: true
+      Name: Grid
+    - Class: rviz_default_plugins/TF
+      Enabled: true
+      Name: TF
+      Show Arrows: true
+      Show Axes: true
+      Show Names: true
+    - Class: rviz_default_plugins/Path
+      Enabled: true
+      Name: Mono cuVSLAM Path
+      Color: 25; 255; 100
+      Line Style:
+        Line Width: 0.03
+        Value: Lines
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /mono_cuvslam/path
+    - Class: rviz_default_plugins/Odometry
+      Enabled: true
+      Name: Mono cuVSLAM Odometry
+      Covariance:
+        Orientation:
+          Value: false
+        Position:
+          Value: false
+        Value: false
+      Keep: 1
+      Shape:
+        Axes Length: 1
+        Axes Radius: 0.05
+        Value: Axes
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /mono_cuvslam/odometry
+    - Class: rviz_default_plugins/Image
+      Enabled: true
+      Name: Mono Camera
+      Topic:
+        Depth: 1
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /camera/image_raw
+  Global Options:
+    Background Color: 48; 48; 48
+    Fixed Frame: cuvslam_odom_optical
+    Frame Rate: 30
+  Name: root
+  Views:
+    Current:
+      Class: rviz_default_plugins/Orbit
+      Distance: 120
+      Focal Point:
+        X: -15
+        Y: -40
+        Z: 0
+      Pitch: 0.785
+      Yaw: 0.785
+Window Geometry:
+  Height: 900
+  Width: 1400

@@ -1,0 +1,32 @@
+# Converted from the supplied f/xp/yp/k1..p2 values.
+# Assumption: f and xp/yp are in pixels; xp/yp are offsets from image center,
+# positive right/down. Confirm the calibration export convention before relying
+# on quantitative tracking results.
+image_width: 1440
+image_height: 1080
+camera_name: firefly_20260622
+camera_matrix:
+  rows: 3
+  cols: 3
+  data: [517.6153405355742, 0.0, 717.1615769602262,
+         0.0, 517.6153405355742, 576.7607815199817,
+         0.0, 0.0, 1.0]
+distortion_model: plumb_bob
+distortion_coefficients:
+  rows: 1
+  cols: 5
+  data: [0.016491615614913246, -0.033020065000947306,
+         0.00005309298841830991, -0.00013316311666469507,
+         0.0056295994391674853]
+rectification_matrix:
+  rows: 3
+  cols: 3
+  data: [1.0, 0.0, 0.0,
+         0.0, 1.0, 0.0,
+         0.0, 0.0, 1.0]
+projection_matrix:
+  rows: 3
+  cols: 4
+  data: [517.6153405355742, 0.0, 717.1615769602262, 0.0,
+         0.0, 517.6153405355742, 576.7607815199817, 0.0,
+         0.0, 0.0, 1.0, 0.0]

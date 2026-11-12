@@ -1,0 +1,33 @@
+# Local caches and Python build artifacts
+.cache/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.venv/
+venv/
+
+# ROS 2 / colcon build outputs
+ros2_ws/build/
+ros2_ws/install/
+ros2_ws/log/
+
+# Generated experiment results and ROS recordings
+/results/
+*.bag
+*.db3
+*.mcap
+
+# Local environment settings and credentials
+.env
+.env.*
+!.env.example
+/.aws/
+/.agents/
+/.codex/
+
+# Editor and operating system temporary files
+*~
+*.swp
+*.swo
+.DS_Store

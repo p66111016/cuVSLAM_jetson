@@ -1,0 +1,32 @@
+# Interprets the supplied f/xp/yp/K1..K3/P1/P2 as Metashape Frame calibration.
+# Metashape's tangential P1/P2 naming is opposite to OpenCV/ROS plumb_bob.
+# Principal-point offsets xp/yp are assumed to have Metashape's +right/+down convention.
+image_width: 1440
+image_height: 1080
+camera_name: firefly_20260622_metashape
+camera_matrix:
+  rows: 3
+  cols: 3
+  data: [517.6153405355742, 0.0, 717.1615769602262,
+         0.0, 517.6153405355742, 576.7607815199817,
+         0.0, 0.0, 1.0]
+distortion_model: plumb_bob
+distortion_coefficients:
+  rows: 1
+  cols: 5
+  # ROS/OpenCV: k1, k2, p1, p2, k3; Metashape P1 -> ROS p2, P2 -> ROS p1.
+  data: [0.016491615614913246, -0.033020065000947306,
+         -0.00013316311666469507, 0.00005309298841830991,
+         0.0056295994391674853]
+rectification_matrix:
+  rows: 3
+  cols: 3
+  data: [1.0, 0.0, 0.0,
+         0.0, 1.0, 0.0,
+         0.0, 0.0, 1.0]
+projection_matrix:
+  rows: 3
+  cols: 4
+  data: [517.6153405355742, 0.0, 717.1615769602262, 0.0,
+         0.0, 517.6153405355742, 576.7607815199817, 0.0,
+         0.0, 0.0, 1.0, 0.0]
